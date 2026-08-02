@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.3 seconds
-Output:
 window.SAS_CONFIG = {};
 window.SAS_CONFIG_READY = fetch('https://yfipyobifjhzfwsyhhew.supabase.co/functions/v1/public-app-config', {
   headers: { accept: 'application/json' },

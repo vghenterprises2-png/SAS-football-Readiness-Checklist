@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.4 seconds
-Output:
 # SAS Personnel Evaluator Changelog
 
 ## v3.2 — Dashboard, Roles, Reminders, and Availability Architecture

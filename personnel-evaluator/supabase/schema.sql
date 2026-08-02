@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.4 seconds
-Output:
 -- SAS Personnel Evaluator v4.0 shared database
 create extension if not exists pgcrypto;
 

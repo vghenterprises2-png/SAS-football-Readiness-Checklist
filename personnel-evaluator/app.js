@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.4 seconds
-Output:
 let db=null,session=null,coach=null,teamId=null,players=[],evalType='individual',selectedPlayer=null,selectedUnit=null,ratings={};
 const groups={OL:['offensive lineman','offensive line','center','guard','tackle','c'],QB:['quarterback'],RB:['running back','rb'],WR:['wr','wide receiver','receiver'],TE:['te','tight end'],DEF:['lb','line backer','linebacker','cornerback','safety','de','defensive tackle','defensive lineman','d-line']};
 const individualCriteria={OL:['First Step','Hand Placement','Footwork','Leverage','Finish'],QB:['Footwork','Decision Making','Accuracy','Command','Overall'],RB:['Track','Vision','Ball Security','Effort','Overall'],WR:['Release','Route Detail','Hands','Effort','Overall'],TE:['Release','Blocking','Route Detail','Effort','Overall'],DEF:['Alignment','Assignment','Technique','Effort','Overall']};
