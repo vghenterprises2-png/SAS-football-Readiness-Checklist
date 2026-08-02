@@ -17,7 +17,7 @@ async function init(){
   $('retrySetup').classList.remove('hide');
   return
  }
- db=supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);
+ db=supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'sas-personnel-evaluator-auth'}});
  const {data:{session:s}}=await db.auth.getSession();session=s;
  db.auth.onAuthStateChange((_,s2)=>{session=s2;setTimeout(()=>{if(s2)loadApp();else show('login')},0)});
  if(session)await loadApp();else show('login')
@@ -36,7 +36,9 @@ async function refresh(){
  ]);
  players=p||[];$('pcount').textContent=players.length;$('ecount').textContent=e||0;$('outcount').textContent=players.filter(x=>x.availability==='Out').length;$('uncount').textContent=players.filter(x=>x.confirmation_status==='unconfirmed').length;renderRoster()
 }
-$('sendLink').onclick=async()=>{const email=$('email').value.trim();if(!email){$('loginMsg').textContent='Enter your coaching staff email.';return}$('loginMsg').textContent='Sending...';const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:new URL('.',location.href).href,shouldCreateUser:true}});$('loginMsg').textContent=error?error.message:'Check your email for the secure sign-in link.'};
+$('passwordLogin').onclick=async()=>{const email=$('email').value.trim(),password=$('password').value;if(!email||!password){$('loginMsg').textContent='Enter your email and app password.';return}$('loginMsg').textContent='Signing in...';const {data,error}=await db.auth.signInWithPassword({email,password});if(error){$('loginMsg').textContent=error.message;return}session=data.session;await loadApp()};
+$('sendLink').onclick=async()=>{const email=$('email').value.trim();if(!email){$('loginMsg').textContent='Enter your coaching staff email.';return}$('loginMsg').textContent='Sending...';const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:new URL('.',location.href).href,shouldCreateUser:false}});$('loginMsg').textContent=error?error.message:'Check your email for the secure sign-in link.'};
+$('setPassword').onclick=async()=>{const password=$('newPassword').value;if(password.length<8){$('passwordMsg').textContent='Use at least eight characters.';return}$('passwordMsg').textContent='Saving...';const {error}=await db.auth.updateUser({password});if(error){$('passwordMsg').textContent=error.message;return}$('newPassword').value='';$('passwordMsg').textContent='App password saved. Your home-screen copy can now sign in once and stay signed in.'};
 $('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
 $('begin').onclick=()=>{renderChoose();show('choose')};
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
