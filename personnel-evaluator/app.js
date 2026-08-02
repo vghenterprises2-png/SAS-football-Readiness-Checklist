@@ -19,7 +19,7 @@ async function init(){
  }
  db=supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);
  const {data:{session:s}}=await db.auth.getSession();session=s;
- db.auth.onAuthStateChange(async(_,s2)=>{session=s2;if(s2)await loadApp();else show('login')});
+ db.auth.onAuthStateChange((_,s2)=>{session=s2;setTimeout(()=>{if(s2)loadApp();else show('login')},0)});
  if(session)await loadApp();else show('login')
 }
 $('retrySetup').onclick=()=>location.reload();
