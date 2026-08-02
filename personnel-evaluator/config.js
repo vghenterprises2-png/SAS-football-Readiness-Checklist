@@ -1,11 +1,21 @@
+Exit code: 0
+Wall time: 0.3 seconds
+Output:
 window.SAS_CONFIG = {};
-try {
-  const request = new XMLHttpRequest();
-  request.open('GET', 'https://yfipyobifjhzfwsyhhew.supabase.co/functions/v1/public-app-config', false);
-  request.send(null);
-  if (request.status >= 200 && request.status < 300) {
-    window.SAS_CONFIG = JSON.parse(request.responseText);
-  }
-} catch (error) {
-  console.error('Unable to load shared app configuration.', error);
-}
+window.SAS_CONFIG_READY = fetch('https://yfipyobifjhzfwsyhhew.supabase.co/functions/v1/public-app-config', {
+  headers: { accept: 'application/json' },
+  cache: 'no-store'
+})
+  .then(response => {
+    if (!response.ok) throw new Error(`Configuration request failed (${response.status})`);
+    return response.json();
+  })
+  .then(config => {
+    window.SAS_CONFIG = config;
+    return config;
+  })
+  .catch(error => {
+    console.error('Unable to load shared app configuration.', error);
+    return null;
+  });
+

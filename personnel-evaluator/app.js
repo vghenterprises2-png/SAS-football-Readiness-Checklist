@@ -1,8 +1,10 @@
-const cfg=window.SAS_CONFIG||{};
+Exit code: 0
+Wall time: 0.4 seconds
+Output:
 let db=null,session=null,coach=null,teamId=null,players=[],evalType='individual',selectedPlayer=null,selectedUnit=null,ratings={};
 const groups={OL:['offensive lineman','offensive line','center','guard','tackle','c'],QB:['quarterback'],RB:['running back','rb'],WR:['wr','wide receiver','receiver'],TE:['te','tight end'],DEF:['lb','line backer','linebacker','cornerback','safety','de','defensive tackle','defensive lineman','d-line']};
 const individualCriteria={OL:['First Step','Hand Placement','Footwork','Leverage','Finish'],QB:['Footwork','Decision Making','Accuracy','Command','Overall'],RB:['Track','Vision','Ball Security','Effort','Overall'],WR:['Release','Route Detail','Hands','Effort','Overall'],TE:['Release','Blocking','Route Detail','Effort','Overall'],DEF:['Alignment','Assignment','Technique','Effort','Overall']};
-const unitCriteria={Offense:['Execution','Tempo','Communication','Effort','Overall'],'Offensive Line':['Run Blocking','Pass Blocking','Effort','Overall'],Quarterbacks:['Decision Making','Accuracy','Leadership','Overall'],Running Backs:['Tracks','Ball Security','Pass Protection','Overall'],Receivers:['Route Running','Blocking','Effort','Overall'],'H / W':['Assignment','Execution','Effort','Overall'],Defense:['Alignment','Fits','Communication','Effort','Overall'],'Special Teams':['Alignment','Assignment','Execution','Effort','Overall']};
+const unitCriteria={Offense:['Execution','Tempo','Communication','Effort','Overall'],'Offensive Line':['Run Blocking','Pass Blocking','Effort','Overall'],Quarterbacks:['Decision Making','Accuracy','Leadership','Overall'],'Running Backs':['Tracks','Ball Security','Pass Protection','Overall'],Receivers:['Route Running','Blocking','Effort','Overall'],'H / W':['Assignment','Execution','Effort','Overall'],Defense:['Alignment','Fits','Communication','Effort','Overall'],'Special Teams':['Alignment','Assignment','Execution','Effort','Overall']};
 const $=id=>document.getElementById(id);
 function show(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');scrollTo(0,0)}
 function toast(m){$('toast').textContent=m;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1800)}
@@ -10,12 +12,20 @@ function safe(v,fallback='—'){return v===null||v===undefined||v===''?fallback:
 function ratingLabel(v){return v==='plus'?'Plus (+)':v==='minus'?'Minus (−)':'Check (✓)'}
 function detail(label,value){return `<div class="detail"><span>${label}</span><b>${safe(value)}</b></div>`}
 async function init(){
- if(!cfg.supabaseUrl||!cfg.supabasePublishableKey||cfg.supabaseUrl.includes('YOUR_')){show('setup');return}
+ show('setup');
+ const cfg=await window.SAS_CONFIG_READY;
+ if(!cfg?.supabaseUrl||!cfg?.supabasePublishableKey||cfg.supabaseUrl.includes('YOUR_')){
+  $('setupTitle').textContent='Unable to connect';
+  $('setupMessage').textContent='The shared database could not be reached. Check your connection and try again.';
+  $('retrySetup').classList.remove('hide');
+  return
+ }
  db=supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey);
  const {data:{session:s}}=await db.auth.getSession();session=s;
  db.auth.onAuthStateChange(async(_,s2)=>{session=s2;if(s2)await loadApp();else show('login')});
  if(session)await loadApp();else show('login')
 }
+$('retrySetup').onclick=()=>location.reload();
 async function loadApp(){
  await db.rpc('link_current_coach');
  const {data:c}=await db.from('coach_directory').select('*').eq('user_id',session.user.id).maybeSingle();
@@ -29,7 +39,7 @@ async function refresh(){
  ]);
  players=p||[];$('pcount').textContent=players.length;$('ecount').textContent=e||0;$('outcount').textContent=players.filter(x=>x.availability==='Out').length;$('uncount').textContent=players.filter(x=>x.confirmation_status==='unconfirmed').length;renderRoster()
 }
-$('sendLink').onclick=async()=>{$('loginMsg').textContent='Sending...';const {error}=await db.auth.signInWithOtp({email:$('email').value.trim(),options:{emailRedirectTo:location.href}});$('loginMsg').textContent=error?error.message:'Check your email for the secure sign-in link.'};
+$('sendLink').onclick=async()=>{const email=$('email').value.trim();if(!email){$('loginMsg').textContent='Enter your coaching staff email.';return}$('loginMsg').textContent='Sending...';const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:new URL('.',location.href).href,shouldCreateUser:true}});$('loginMsg').textContent=error?error.message:'Check your email for the secure sign-in link.'};
 $('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
 $('begin').onclick=()=>{renderChoose();show('choose')};
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
@@ -78,3 +88,4 @@ async function loadHistory(){const {data,error}=await db.from('evaluations').sel
 $('historyBtn').onclick=loadHistory;
 $('exportBtn').onclick=async()=>{const {data,error}=await db.from('evaluations').select('created_at,evaluator_name,evaluator_role,evaluation_type,context,unit_name,team_level,criterion,rating,note,players(name,jersey)').eq('team_id',teamId).order('created_at');if(error){toast(error.message);return}const esc=v=>'"'+String(v??'').replaceAll('"','""')+'"',header=['created_at','player','evaluator','role','type','context','unit','team_level','criterion','rating','note'];const csv=[header.join(','),...(data||[]).map(e=>[e.created_at,e.players?`${e.players.jersey||''} ${e.players.name}`:'',e.evaluator_name,e.evaluator_role,e.evaluation_type,e.context,e.unit_name,e.team_level,e.criterion,e.rating,e.note].map(esc).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='sas-evaluations.csv';a.click();URL.revokeObjectURL(a.href)};
 init();
+

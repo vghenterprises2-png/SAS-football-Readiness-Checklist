@@ -1,3 +1,6 @@
+Exit code: 0
+Wall time: 0.4 seconds
+Output:
 # SAS Personnel Evaluator Changelog
 
 ## v3.2 — Dashboard, Roles, Reminders, and Availability Architecture
@@ -81,3 +84,11 @@
 - Refine evaluator role and authority profiles, including unit authority versus position authority.
 - Test the v3.1 workflow on mobile during a realistic practice sequence.
 - Refine the daily evaluation so it remains fast and optional rather than becoming another required form.
+# v4.2 — Pilot Candidate
+
+- Replaced the blocking cross-origin configuration request with an asynchronous startup flow.
+- Removed the obsolete database-setup placeholder from normal startup.
+- Repaired player profile tabs, navigation, field bindings, testing data, status controls, and evaluation history.
+- Pinned the Supabase browser client version for repeatable deployments.
+- Hardened database function permissions and restricted application policies to authenticated coaches.
+
